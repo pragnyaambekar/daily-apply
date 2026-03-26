@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { X, Upload, FileText, Trash2, ExternalLink } from 'lucide-react';
 import { useApplications } from '../context/ApplicationContext';
-import { STATUSES, JOB_TYPES, EMPTY_APPLICATION } from '../constants';
+import { STATUSES, JOB_TYPES, EMPTY_APPLICATION, SALARY_OPTIONS } from '../constants';
 import StatusBadge from './StatusBadge';
 import ConfirmDialog from './ConfirmDialog';
 
@@ -14,7 +14,7 @@ export default function ApplicationModal({ application, onClose }) {
     dateApplied: new Date().toISOString().split('T')[0],
     ...(application || {}),
   }));
-  const [errors, setErrors]           = useState({});
+  const [errors, setErrors] = useState({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const firstInputRef = useRef(null);
 
@@ -38,7 +38,7 @@ export default function ApplicationModal({ application, onClose }) {
   const validate = () => {
     const errs = {};
     if (!form.company.trim()) errs.company = 'Company name is required';
-    if (!form.role.trim())    errs.role    = 'Job title is required';
+    if (!form.role.trim()) errs.role = 'Job title is required';
     if (form.url && !/^https?:\/\/.+/.test(form.url.trim())) errs.url = 'URL must start with http:// or https://';
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -136,9 +136,19 @@ export default function ApplicationModal({ application, onClose }) {
             <input type="text" value={form.location} onChange={(e) => set('location', e.target.value)} className="jt-input" placeholder="e.g., Remote, Seattle, WA" />
           </div>
 
-          <div className="mb-3">
-            <label style={labelStyle}>Salary Range</label>
-            <input type="text" value={form.salary} onChange={(e) => set('salary', e.target.value)} className="jt-input" placeholder="e.g., $120k–$150k" />
+          <div className="row g-3 mb-3">
+            <div className="col-6">
+              <label style={labelStyle}>Min Salary</label>
+              <select value={form.salaryMin} onChange={(e) => set('salaryMin', e.target.value)} className="jt-input">
+                {SALARY_OPTIONS.map((val) => <option key={`min-${val}`} value={val}>{val || 'Not specified'}</option>)}
+              </select>
+            </div>
+            <div className="col-6">
+              <label style={labelStyle}>Max Salary</label>
+              <select value={form.salaryMax} onChange={(e) => set('salaryMax', e.target.value)} className="jt-input">
+                {SALARY_OPTIONS.map((val) => <option key={`max-${val}`} value={val}>{val || 'Not specified'}</option>)}
+              </select>
+            </div>
           </div>
 
           <div className="mb-3">

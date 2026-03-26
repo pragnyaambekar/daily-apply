@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { X, ExternalLink, Calendar, MapPin, Briefcase, DollarSign, FileText, Trash2 } from 'lucide-react';
 import StatusBadge from './StatusBadge';
-import { formatDate, daysSince } from '../utils/helpers';
+import { formatDate, daysSince, formatSalary } from '../utils/helpers';
 import { useApplications } from '../context/ApplicationContext';
 import ConfirmDialog from './ConfirmDialog';
 
@@ -83,9 +83,9 @@ export default function JobDescriptionPanel({ application, onClose, onEdit }) {
           {/* Meta grid */}
           <div className="row g-3 mb-4">
             {[
-              { label: 'Date Applied',   icon: Calendar,    val: application.dateApplied   ? formatDate(application.dateApplied)   : null },
-              { label: 'Salary Range',   icon: DollarSign,  val: application.salary        || null },
-              { label: 'Interview Date', icon: Calendar,    val: application.interviewDate ? formatDate(application.interviewDate) : null },
+              { label: 'Date Applied', icon: Calendar, val: application.dateApplied ? formatDate(application.dateApplied) : null },
+              { label: 'Salary Range', icon: DollarSign, val: formatSalary(application) },
+              { label: 'Interview Date', icon: Calendar, val: application.interviewDate ? formatDate(application.interviewDate) : null },
             ].filter((x) => x.val).map(({ label, icon: Icon, val }) => (
               <div key={label} className="col-6">
                 <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>

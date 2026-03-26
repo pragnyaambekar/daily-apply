@@ -36,6 +36,12 @@ export const STATUS_COLORS = {
 
 export const TERMINAL_STATUSES = ['Offer', 'Rejected', 'Ghosted', 'Withdrawn'];
 
+export const SALARY_OPTIONS = [
+    '',
+    ...Array.from({ length: 46 }, (_, i) => `$${(i + 5) * 10}k`),
+    '$500k+'
+];
+
 export const EMPTY_APPLICATION = {
     id: '',
     company: '',
@@ -46,7 +52,8 @@ export const EMPTY_APPLICATION = {
     jobType: 'Full-time',
     dateApplied: new Date().toISOString().split('T')[0],
     status: 'Applied',
-    salary: '',
+    salaryMin: '',
+    salaryMax: '',
     resumeFile: null,
     resumeName: '',
     interviewDate: '',

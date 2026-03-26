@@ -3,23 +3,23 @@ import { ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, CheckSquare, Square, Exte
 import { useApplications } from '../context/ApplicationContext';
 import { STATUSES, STATUS_COLORS } from '../constants';
 import StatusBadge from './StatusBadge';
-import { daysSince, needsFollowUp, formatDate } from '../utils/helpers';
+import { daysSince, needsFollowUp, formatDate, formatSalary } from '../utils/helpers';
 
 const COLUMNS = [
-  { key: 'company',    label: 'Company'  },
-  { key: 'role',       label: 'Role'     },
-  { key: 'status',     label: 'Status'   },
-  { key: 'dateApplied',label: 'Applied'  },
-  { key: 'location',   label: 'Location' },
-  { key: 'jobType',    label: 'Type'     },
-  { key: 'salary',     label: 'Salary'   },
-  { key: 'daysSince',  label: 'Days'     },
+  { key: 'company', label: 'Company' },
+  { key: 'role', label: 'Role' },
+  { key: 'status', label: 'Status' },
+  { key: 'dateApplied', label: 'Applied' },
+  { key: 'location', label: 'Location' },
+  { key: 'jobType', label: 'Type' },
+  { key: 'salary', label: 'Salary' },
+  { key: 'daysSince', label: 'Days' },
 ];
 
 export default function TableView({ filteredApplications, onSelectApp }) {
   const { bulkUpdateStatus } = useApplications();
-  const [sortKey, setSortKey]   = useState('dateApplied');
-  const [sortDir, setSortDir]   = useState('desc');
+  const [sortKey, setSortKey] = useState('dateApplied');
+  const [sortDir, setSortDir] = useState('desc');
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [bulkOpen, setBulkOpen] = useState(false);
 
@@ -33,7 +33,7 @@ export default function TableView({ filteredApplications, onSelectApp }) {
   }, [filteredApplications, sortKey, sortDir]);
 
   const handleSort = (key) => { if (sortKey === key) setSortDir((d) => d === 'asc' ? 'desc' : 'asc'); else { setSortKey(key); setSortDir('asc'); } };
-  const toggleSelect    = (id) => setSelectedIds((p) => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggleSelect = (id) => setSelectedIds((p) => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
   const toggleSelectAll = () => setSelectedIds(selectedIds.size === sorted.length ? new Set() : new Set(sorted.map((a) => a.id)));
   const handleBulkStatus = (s) => { bulkUpdateStatus([...selectedIds], s); setSelectedIds(new Set()); setBulkOpen(false); };
 
@@ -131,7 +131,7 @@ export default function TableView({ filteredApplications, onSelectApp }) {
                   <td style={{ whiteSpace: 'nowrap' }}>{formatDate(app.dateApplied)}</td>
                   <td>{app.location || '—'}</td>
                   <td>{app.jobType}</td>
-                  <td>{app.salary || '—'}</td>
+                  <td>{formatSalary(app) || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: 13 }}>Not specified</span>}</td>
                   <td>
                     <span className="d-inline-flex align-items-center gap-1" style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                       <Clock size={11} />{app.daysSince >= 0 ? `${app.daysSince}d` : '—'}

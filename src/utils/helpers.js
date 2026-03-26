@@ -1,5 +1,13 @@
 import { TERMINAL_STATUSES } from '../constants';
 
+export function formatSalary(app) {
+    if (app.salaryMin && app.salaryMax) return `${app.salaryMin} – ${app.salaryMax}`;
+    if (app.salaryMin) return `${app.salaryMin}`;
+    if (app.salaryMax) return `Up to ${app.salaryMax}`;
+    if (app.salary) return app.salary;
+    return null;
+}
+
 export function generateId() {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
         return crypto.randomUUID();
@@ -79,7 +87,7 @@ export function exportToCSV(applications) {
         a.dateApplied,
         `"${(a.location || '').replace(/"/g, '""')}"`,
         `"${a.jobType}"`,
-        `"${(a.salary || '').replace(/"/g, '""')}"`,
+        `"${(formatSalary(a) || '').replace(/"/g, '""')}"`,
         `"${(a.url || '').replace(/"/g, '""')}"`,
         a.interviewDate || '',
         `"${(a.notes || '').replace(/"/g, '""')}"`,
