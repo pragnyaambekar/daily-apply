@@ -78,6 +78,7 @@ export function exportToCSV(applications) {
         'Salary',
         'URL',
         'Interview Date',
+        'Resume',
         'Notes',
     ];
     const rows = applications.map((a) => [
@@ -90,6 +91,7 @@ export function exportToCSV(applications) {
         `"${(formatSalary(a) || '').replace(/"/g, '""')}"`,
         `"${(a.url || '').replace(/"/g, '""')}"`,
         a.interviewDate || '',
+        `"${(a.resumeName || '').replace(/"/g, '""')}"`,
         `"${(a.notes || '').replace(/"/g, '""')}"`,
     ]);
 
