@@ -7,6 +7,7 @@ import {
     saveApplication,
     removeApplication,
 } from '../utils/firestoreAdapter';
+import { saveResumeLocally, getResumeLocally, deleteResumeLocally } from '../utils/localDB';
 
 const ApplicationContext = createContext(null);
 
@@ -40,9 +41,9 @@ function applicationReducer(state, action) {
         case 'ADD': {
             const app = {
                 ...action.payload,
-                id: generateId(),
-                createdAt: now,
-                updatedAt: now,
+                id: action.payload.id || generateId(),
+                createdAt: action.payload.createdAt || now,
+                updatedAt: action.payload.updatedAt || now,
             };
             newState = [...state, app];
             break;
@@ -50,7 +51,7 @@ function applicationReducer(state, action) {
         case 'UPDATE': {
             newState = state.map((app) =>
                 app.id === action.payload.id
-                    ? { ...app, ...action.payload, updatedAt: now }
+                    ? { ...app, ...action.payload, updatedAt: action.payload.updatedAt || now }
                     : app
             );
             break;
@@ -105,8 +106,14 @@ export function ApplicationProvider({ children }) {
             localStore.save([]);
             dispatch({ type: 'SET', payload: [] });
             fetchApplications(user.uid)
-                .then((apps) => {
-                    dispatch({ type: 'SET', payload: apps });
+                .then(async (apps) => {
+                    const enrichedApps = await Promise.all(
+                        apps.map(async (app) => {
+                            const resumeFile = await getResumeLocally(app.id);
+                            return resumeFile ? { ...app, resumeFile } : app;
+                        })
+                    );
+                    dispatch({ type: 'SET', payload: enrichedApps });
                 })
                 .catch((err) => {
                     console.error(err);
@@ -123,27 +130,32 @@ export function ApplicationProvider({ children }) {
     }, [user]);
 
     const addApplication = useCallback(
-        (app) => {
+        async (appInfo) => {
+            const now = new Date().toISOString();
+            const app = { ...appInfo, id: appInfo.id || generateId(), createdAt: now, updatedAt: now };
+            if (app.resumeFile) {
+                await saveResumeLocally(app.id, app.resumeFile);
+            }
             dispatch({ type: 'ADD', payload: app });
+
             if (user) {
-                setTimeout(() => {
-                    const stored = localStore.load();
-                    const newest = stored[stored.length - 1];
-                    if (newest) {
-                        saveApplication(user.uid, newest).catch((err) => {
-                            console.error(err);
-                            toast('Failed to save application to cloud.', 'error');
-                        });
-                    }
-                }, 50);
+                saveApplication(user.uid, app).catch((err) => {
+                    console.error(err);
+                    toast('Failed to save application to cloud.', 'error');
+                });
             }
         },
         [user]
     );
 
     const updateApplication = useCallback(
-        (app) => {
+        async (app) => {
+            app.updatedAt = new Date().toISOString();
+            if (app.resumeFile !== undefined) {
+                await saveResumeLocally(app.id, app.resumeFile);
+            }
             dispatch({ type: 'UPDATE', payload: app });
+
             if (user) {
                 saveApplication(user.uid, app).catch((err) => {
                     console.error(err);
@@ -155,7 +167,8 @@ export function ApplicationProvider({ children }) {
     );
 
     const deleteApplication = useCallback(
-        (id) => {
+        async (id) => {
+            await deleteResumeLocally(id);
             dispatch({ type: 'DELETE', payload: id });
             if (user) {
                 removeApplication(user.uid, id).catch((err) => {
